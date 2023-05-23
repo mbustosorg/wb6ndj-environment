@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>HiveMQ Data Chart</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+    <div style="height: 300px">
+        <canvas id="chart"></canvas>
+        <canvas id="chart2"></canvas>
+    </div>
+
+    <script>
+        var ctx = document.getElementById('chart').getContext('2d');
+        var temperature_inside_chart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'TEMPERATURE_INSIDE',
+                    data: [],
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+        var ctx = document.getElementById('chart2').getContext('2d');
+        var humidity_inside_chart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'HUMIDITY_INSIDE',
+                    data: [],
+                    backgroundColor: 'rgba(75, 192, 192, 0.8)',
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+        function fetchData() {
+            fetch('/data/temperature_inside')
+                .then(response => response.json())
+                .then(data => {
+                    var dates = data.data[0].map(function(e) {
+                        return new Date(e).toLocaleTimeString();
+                    });
+                    temperature_inside_chart.data.labels = Array.from(dates);
+                    temperature_inside_chart.data.datasets[0].data = Array.from(data.data[1]);
+                    temperature_inside_chart.update();
+                });
+            fetch('/data/humidity_inside')
+                .then(response => response.json())
+                .then(data => {
+                    var dates = data.data[0].map(function(e) {
+                        return new Date(e).toLocaleTimeString();
+                    });
+                    humidity_inside_chart.data.labels = Array.from(dates);
+                    humidity_inside_chart.data.datasets[0].data = Array.from(data.data[1]);
+                    humidity_inside_chart.update();
+                });
+        }
+
+        setInterval(fetchData, 10000);
+    </script>
+</body>
+</html>
