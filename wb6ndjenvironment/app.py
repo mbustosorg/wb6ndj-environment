@@ -37,6 +37,6 @@ def humidity_inside():
 
 if __name__ == '__main__':
     if "PORT" in os.environ:
-        app.run(debug=True, port=os.environ["PORT"])
+        app.run(debug=True, port=os.environ["PORT"], host="wb6ndj-environment.herokuapp.com")
     else:
         app.run(debug=True)
