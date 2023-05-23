@@ -1,6 +1,7 @@
 import threading
 import logging
 import pandas as pd
+import os
 
 from flask import Flask, render_template, jsonify
 
@@ -35,4 +36,7 @@ def humidity_inside():
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    if "PORT" in os.environ:
+        app.run(debug=True, port=os.environ["PORT"])
+    else:
+        app.run(debug=True)

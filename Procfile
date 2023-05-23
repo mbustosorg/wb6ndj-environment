@@ -1,0 +1,1 @@
+web: python -m wb6ndjenvironment.app
