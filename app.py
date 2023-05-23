@@ -23,20 +23,20 @@ def index():
 
 @app.route('/data/temperature_inside')
 def temperature_inside():
-    data = pd.read_csv("TEMPERATURE_INSIDE.txt")
+    data = pd.read_csv("wb6ndjenvironment/TEMPERATURE_INSIDE.txt")
     columns = [data["DATE"].tolist(), data["VALUE"].tolist()]
     return jsonify(data=columns)
 
 
 @app.route('/data/humidity_inside')
 def humidity_inside():
-    data = pd.read_csv("HUMIDITY_INSIDE.txt")
+    data = pd.read_csv("wb6ndjenvironment/HUMIDITY_INSIDE.txt")
     columns = [data["DATE"].tolist(), data["VALUE"].tolist()]
     return jsonify(data=columns)
 
 
 if __name__ == '__main__':
     if "PORT" in os.environ:
-        app.run(debug=True, port=os.environ["PORT"], host="wb6ndj-environment.herokuapp.com")
+        app.run(debug=True, port=os.environ["PORT"])
     else:
         app.run(debug=True)

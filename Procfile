@@ -1,1 +1,1 @@
-web: python -m wb6ndjenvironment.app
+web: gunicorn app:app
