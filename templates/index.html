@@ -6,9 +6,11 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/date-fns/1.30.1/date_fns.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
 </head>
-    <div style="height: 300px">
+    <div style="height: 200px">
         <canvas id="chart"></canvas>
         <canvas id="chart2"></canvas>
+        <canvas id="chart3"></canvas>
+        <canvas id="chart4"></canvas>
     </div>
 
     <script>
@@ -62,6 +64,56 @@
                 }
             }
         });
+        var ctx = document.getElementById('chart3').getContext('2d');
+        var temperature_repeater_chart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'TEMPERATURE_REPEATER',
+                    data: [],
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                x: {
+                    type: 'time',
+                },
+                y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+        var ctx = document.getElementById('chart4').getContext('2d');
+        var humidity_repeater_chart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'HUMIDITY_REPEATER',
+                    data: [],
+                    backgroundColor: 'rgba(75, 192, 192, 0.8)',
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                     x: {
+                        type: 'time',
+                     },
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
 
         function fetchData() {
             fetch('/data/temperature_inside')
@@ -86,6 +138,29 @@
                     humidity_inside_chart.data.labels = Array.from(dates);
                     humidity_inside_chart.data.datasets[0].data = Array.from(c);
                     humidity_inside_chart.update();
+                });
+            fetch('/data/temperature_repeater')
+                .then(response => response.json())
+                .then(data => {
+                    var dates = data.data[0].map(function(e) {
+                        return new Date(e);
+                    });
+                    temperature_repeater_chart.data.labels = Array.from(dates);
+                    temperature_repeater_chart.data.datasets[0].data = Array.from(data.data[1]);
+                    temperature_repeater_chart.update();
+                });
+            fetch('/data/humidity_repeater')
+                .then(response => response.json())
+                .then(data => {
+                    var dates = data.data[0].map(function(e) {
+                        return new Date(e).getTime();
+                    });
+                    var c = data.data[1].map(function (e, i) {
+                        return {x: dates[i], y: e};
+                    })
+                    humidity_repeater_chart.data.labels = Array.from(dates);
+                    humidity_repeater_chart.data.datasets[0].data = Array.from(c);
+                    humidity_repeater_chart.update();
                 });
         }
         fetchData();

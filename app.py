@@ -23,30 +23,36 @@ def index():
     return render_template("index.html")
 
 
-@app.route("/data/temperature_inside")
-def temperature_inside():
+def data_for_sensor(sensor):
     try:
         db_connection = sql_engine.connect()
-        data = pd.read_sql("select * from wb6ndjenv.TEMPERATURE_INSIDE", db_connection)
+        data = pd.read_sql(f"select * from wb6ndjenv.{sensor}", db_connection)
         db_connection.close()
-        columns = [data["date"].tolist(), data["TEMPERATURE_INSIDE"].tolist()]
+        columns = [data["date"].tolist(), data[sensor].tolist()]
         return jsonify(data=columns)
     except:
         db_connection.rollback()
         db_connection.close()
+
+
+@app.route("/data/temperature_inside")
+def temperature_inside():
+    return data_for_sensor("TEMPERATURE_INSIDE")
 
 
 @app.route("/data/humidity_inside")
 def humidity_inside():
-    try:
-        db_connection = sql_engine.connect()
-        data = pd.read_sql("select * from wb6ndjenv.HUMIDITY_INSIDE", db_connection)
-        db_connection.close()
-        columns = [data["date"].tolist(), data["HUMIDITY_INSIDE"].tolist()]
-        return jsonify(data=columns)
-    except:
-        db_connection.rollback()
-        db_connection.close()
+    return data_for_sensor("HUMIDITY_INSIDE")
+
+
+@app.route("/data/temperature_repeater")
+def temperature_repeater():
+    return data_for_sensor("TEMPERATURE_REPEATER")
+
+
+@app.route("/data/humidity_repeater")
+def humidity_repeater():
+    return data_for_sensor("HUMIDITY_REPEATER")
 
 
 if __name__ == "__main__":
