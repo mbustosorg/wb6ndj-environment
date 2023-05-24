@@ -1,3 +1,4 @@
+"""Application to monitor MQTT messsages and store to a database"""
 import datetime
 import logging
 import os
@@ -14,17 +15,25 @@ load_dotenv()
 
 broker_address = os.environ["BROKER_ADDRESS"]
 broker_port = int(os.environ["BROKER_PORT"])
-topics = ["TEMPERATURE_INSIDE", "HUMIDITY_INSIDE"]
+topics = ["TEMPERATURE_INSIDE", "HUMIDITY_INSIDE", "TEMPERATURE_REPEATER", "HUMIDITY_REPEATER"]
 
-sql_engine = create_engine(f"mysql+pymysql://{os.environ['DB_USER']}:{os.environ['DB_PASSWORD']}@{os.environ['DB_HOST']}/{os.environ['DB']}", pool_recycle=3600)
+sql_engine = create_engine(
+    f"mysql+pymysql://{os.environ['DB_USER']}:{os.environ['DB_PASSWORD']}@{os.environ['DB_HOST']}/{os.environ['DB']}",
+    pool_recycle=3600,
+)
 db_connection = sql_engine.connect()
 
 
 def on_message(client, userdata, message):
     """Handle a message from the MQTT broker"""
-    df = pd.DataFrame([[datetime.datetime.utcnow().isoformat(), message.payload.decode()]], columns=["date", message.topic])
+    df = pd.DataFrame(
+        [[datetime.datetime.utcnow().isoformat(), message.payload.decode()]],
+        columns=["date", message.topic],
+    )
     df.to_sql(message.topic, db_connection, if_exists="append", index=False)
-    LOGGER.info(f"Message received and saved to file {message.topic}:  {message.payload.decode()}")
+    LOGGER.info(
+        f"Message received and saved to file {message.topic}:  {message.payload.decode()}"
+    )
 
 
 def run():

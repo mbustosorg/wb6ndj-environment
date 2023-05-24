@@ -1,3 +1,4 @@
+"""Flask application to server website for environmental data"""
 import wb6ndjenvironment
 import os
 from dotenv import load_dotenv
@@ -10,17 +11,19 @@ load_dotenv()
 
 sql_engine = create_engine(
     f"mysql+pymysql://{os.environ['DB_USER']}:{os.environ['DB_PASSWORD']}@{os.environ['DB_HOST']}/{os.environ['DB']}",
-    pool_recycle=3600, isolation_level="AUTOCOMMIT")
+    pool_recycle=3600,
+    isolation_level="AUTOCOMMIT",
+)
 
 app = Flask(__name__)
 
 
-@app.route('/')
+@app.route("/")
 def index():
-    return render_template('index.html')
+    return render_template("index.html")
 
 
-@app.route('/data/temperature_inside')
+@app.route("/data/temperature_inside")
 def temperature_inside():
     try:
         db_connection = sql_engine.connect()
@@ -33,7 +36,7 @@ def temperature_inside():
         db_connection.close()
 
 
-@app.route('/data/humidity_inside')
+@app.route("/data/humidity_inside")
 def humidity_inside():
     try:
         db_connection = sql_engine.connect()
@@ -46,7 +49,7 @@ def humidity_inside():
         db_connection.close()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     if "PORT" in os.environ:
         app.run(debug=True, port=os.environ["PORT"])
     else:
