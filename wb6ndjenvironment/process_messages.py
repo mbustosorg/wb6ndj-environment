@@ -1,22 +1,14 @@
 import datetime
-import os
 import logging
-import sys
+import os
 from dotenv import load_dotenv
 
+import pymysql
+from sqlalchemy import create_engine
+import pandas as pd
 import paho.mqtt.client as mqtt
 
-DEFAULT_LEVEL = logging.INFO
-FORMATTER = logging.Formatter(
-    "%(asctime)s|%(process)d|%(module)s|%(levelname)s|%(message)s"
-)
 LOGGER = logging.getLogger()
-LOGGER.setLevel(DEFAULT_LEVEL)
-LOGGER.handlers = []
-handler = logging.StreamHandler(sys.stdout)
-handler.setLevel(DEFAULT_LEVEL)
-handler.setFormatter(FORMATTER)
-LOGGER.addHandler(handler)
 
 load_dotenv()
 
@@ -24,11 +16,14 @@ broker_address = os.environ["BROKER_ADDRESS"]
 broker_port = int(os.environ["BROKER_PORT"])
 topics = ["TEMPERATURE_INSIDE", "HUMIDITY_INSIDE"]
 
+sql_engine = create_engine(f"mysql+pymysql://{os.environ['DB_USER']}:{os.environ['DB_PASSWORD']}@{os.environ['DB_HOST']}/{os.environ['DB']}", pool_recycle=3600)
+db_connection = sql_engine.connect()
+
 
 def on_message(client, userdata, message):
     """Handle a message from the MQTT broker"""
-    with open(f"{message.topic}.txt", 'a') as file:
-        file.write(f"{datetime.datetime.utcnow().isoformat()},{message.payload.decode()}\n")
+    df = pd.DataFrame([[datetime.datetime.utcnow().isoformat(), message.payload.decode()]], columns=["date", message.topic])
+    df.to_sql(message.topic, db_connection, if_exists="append", index=False)
     LOGGER.info(f"Message received and saved to file {message.topic}:  {message.payload.decode()}")
 
 

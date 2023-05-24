@@ -3,3 +3,5 @@ paho-mqtt
 pandas
 python-dotenv
 gunicorn
+sqlalchemy
+pymysql
