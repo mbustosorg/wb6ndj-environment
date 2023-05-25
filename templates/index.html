@@ -6,163 +6,72 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/date-fns/1.30.1/date_fns.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
 </head>
-    <div style="height: 200px">
+<div style="margin: auto; width: 75%">
+    <div style="width: 50%; float: left">
         <canvas id="chart"></canvas>
         <canvas id="chart2"></canvas>
+    </div>
+    <div style="width: 50%; float: left">
         <canvas id="chart3"></canvas>
         <canvas id="chart4"></canvas>
     </div>
+</div>
 
     <script>
+        function newChart(ctx, name, bg, bc) {
+            return new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: name,
+                    data: [],
+                    backgroundColor: bg,
+                    borderColor: bc,
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                x: {
+                    type: 'time',
+                },
+                y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        })};
         var ctx = document.getElementById('chart').getContext('2d');
-        var temperature_inside_chart = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: [],
-                datasets: [{
-                    label: 'TEMPERATURE_INSIDE',
-                    data: [],
-                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                    borderColor: 'rgba(75, 192, 192, 1)',
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                responsive: true,
-                scales: {
-                x: {
-                    type: 'time',
-                },
-                y: {
-                        beginAtZero: true
-                    }
-                }
-            }
-        });
+        var temperature_inside_chart = newChart(ctx, "TEMPERATURE_INSIDE", 'rgba(192,89,75,0.68)', 'rgb(234,19,19)');
         var ctx = document.getElementById('chart2').getContext('2d');
-        var humidity_inside_chart = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: [],
-                datasets: [{
-                    label: 'HUMIDITY_INSIDE',
-                    data: [],
-                    backgroundColor: 'rgba(75, 192, 192, 0.8)',
-                    borderColor: 'rgba(75, 192, 192, 1)',
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                responsive: true,
-                scales: {
-                     x: {
-                        type: 'time',
-                     },
-                    y: {
-                        beginAtZero: true
-                    }
-                }
-            }
-        });
+        var humidity_inside_chart = newChart(ctx, "HUMIDITY_INSIDE", 'rgba(75, 192, 192, 0.8)', 'rgba(75, 192, 192, 1)');
         var ctx = document.getElementById('chart3').getContext('2d');
-        var temperature_repeater_chart = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: [],
-                datasets: [{
-                    label: 'TEMPERATURE_REPEATER',
-                    data: [],
-                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                    borderColor: 'rgba(75, 192, 192, 1)',
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                responsive: true,
-                scales: {
-                x: {
-                    type: 'time',
-                },
-                y: {
-                        beginAtZero: true
-                    }
-                }
-            }
-        });
+        var temperature_repeater_chart = newChart(ctx, "TEMPERATURE_REPEATER", 'rgba(192,89,75,0.68)', 'rgb(234,19,19)');
         var ctx = document.getElementById('chart4').getContext('2d');
-        var humidity_repeater_chart = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: [],
-                datasets: [{
-                    label: 'HUMIDITY_REPEATER',
-                    data: [],
-                    backgroundColor: 'rgba(75, 192, 192, 0.8)',
-                    borderColor: 'rgba(75, 192, 192, 1)',
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                responsive: true,
-                scales: {
-                     x: {
-                        type: 'time',
-                     },
-                    y: {
-                        beginAtZero: true
-                    }
-                }
-            }
-        });
+        var humidity_repeater_chart = newChart(ctx, "HUMIDITY_REPEATER", 'rgba(75, 192, 192, 0.8)', 'rgba(75, 192, 192, 1)');
+
+        function processNewData(endpoint, chart) {
+            fetch(endpoint)
+                .then(response => response.json())
+                .then(data => {
+                    var dates = data.data[0].map(function(e) {
+                        return new Date(e);
+                    });
+                    chart.data.labels = Array.from(dates);
+                    chart.data.datasets[0].data = Array.from(data.data[1]);
+                    chart.update();
+                });
+        };
 
         function fetchData() {
-            fetch('/data/temperature_inside')
-                .then(response => response.json())
-                .then(data => {
-                    var dates = data.data[0].map(function(e) {
-                        return new Date(e);
-                    });
-                    temperature_inside_chart.data.labels = Array.from(dates);
-                    temperature_inside_chart.data.datasets[0].data = Array.from(data.data[1]);
-                    temperature_inside_chart.update();
-                });
-            fetch('/data/humidity_inside')
-                .then(response => response.json())
-                .then(data => {
-                    var dates = data.data[0].map(function(e) {
-                        return new Date(e).getTime();
-                    });
-                    var c = data.data[1].map(function (e, i) {
-                        return {x: dates[i], y: e};
-                    })
-                    humidity_inside_chart.data.labels = Array.from(dates);
-                    humidity_inside_chart.data.datasets[0].data = Array.from(c);
-                    humidity_inside_chart.update();
-                });
-            fetch('/data/temperature_repeater')
-                .then(response => response.json())
-                .then(data => {
-                    var dates = data.data[0].map(function(e) {
-                        return new Date(e);
-                    });
-                    temperature_repeater_chart.data.labels = Array.from(dates);
-                    temperature_repeater_chart.data.datasets[0].data = Array.from(data.data[1]);
-                    temperature_repeater_chart.update();
-                });
-            fetch('/data/humidity_repeater')
-                .then(response => response.json())
-                .then(data => {
-                    var dates = data.data[0].map(function(e) {
-                        return new Date(e).getTime();
-                    });
-                    var c = data.data[1].map(function (e, i) {
-                        return {x: dates[i], y: e};
-                    })
-                    humidity_repeater_chart.data.labels = Array.from(dates);
-                    humidity_repeater_chart.data.datasets[0].data = Array.from(c);
-                    humidity_repeater_chart.update();
-                });
-        }
+            processNewData('/data/temperature_inside', temperature_inside_chart);
+            processNewData('/data/humidity_inside', humidity_inside_chart);
+            processNewData('/data/temperature_repeater', temperature_repeater_chart);
+            processNewData('/data/humidity_repeater', humidity_repeater_chart);
+        };
+
         fetchData();
         setInterval(fetchData, 10000);
     </script>
