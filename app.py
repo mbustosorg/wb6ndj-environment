@@ -20,10 +20,12 @@ app = Flask(__name__)
 
 @app.route("/")
 def index():
+    """Index route"""
     return render_template("index.html")
 
 
-def data_for_sensor(sensor):
+def data_for_sensor(sensor: str):
+    """Get data for 'sensor'"""
     try:
         db_connection = sql_engine.connect()
         data = pd.read_sql(f"select * from wb6ndjenv.{sensor}", db_connection)
@@ -35,24 +37,10 @@ def data_for_sensor(sensor):
         db_connection.close()
 
 
-@app.route("/data/temperature_inside")
-def temperature_inside():
-    return data_for_sensor("TEMPERATURE_INSIDE")
-
-
-@app.route("/data/humidity_inside")
-def humidity_inside():
-    return data_for_sensor("HUMIDITY_INSIDE")
-
-
-@app.route("/data/temperature_repeater")
-def temperature_repeater():
-    return data_for_sensor("TEMPERATURE_REPEATER")
-
-
-@app.route("/data/humidity_repeater")
-def humidity_repeater():
-    return data_for_sensor("HUMIDITY_REPEATER")
+@app.route("/data/<sensor_name>")
+def sensor_value(sensor_name: str):
+    """Endpoint for sensor data"""
+    return data_for_sensor(sensor_name.upper())
 
 
 if __name__ == "__main__":

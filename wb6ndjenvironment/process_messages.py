@@ -16,7 +16,7 @@ load_dotenv()
 
 broker_address = os.environ["BROKER_ADDRESS"]
 broker_port = int(os.environ["BROKER_PORT"])
-topics = ["TEMPERATURE_INSIDE", "HUMIDITY_INSIDE", "TEMPERATURE_REPEATER", "HUMIDITY_REPEATER"]
+topics = ["TEMPERATURE_INSIDE", "HUMIDITY_INSIDE", "TEMPERATURE_REPEATER", "HUMIDITY_REPEATER", "TEMPERATURE_OUTSIDE", "HUMIDITY_OUTSIDE"]
 
 
 sql_engine = create_engine(
