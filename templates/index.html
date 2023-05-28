@@ -69,9 +69,9 @@
         var ctx = document.getElementById('chart4').getContext('2d');
         var humidity_repeater_chart = newChart(ctx, "HUMIDITY_REPEATER", 'rgba(75, 192, 192, 0.8)', 'rgba(75, 192, 192, 1)');
         var ctx = document.getElementById('chart5').getContext('2d');
-        var temperature_repeater_chart = newChart(ctx, "TEMPERATURE_OUTSIDE", 'rgba(192,89,75,0.68)', 'rgb(234,19,19)');
+        var temperature_outside_chart = newChart(ctx, "TEMPERATURE_OUTSIDE", 'rgba(192,89,75,0.68)', 'rgb(234,19,19)');
         var ctx = document.getElementById('chart6').getContext('2d');
-        var humidity_repeater_chart = newChart(ctx, "HUMIDITY_OUTSIDE", 'rgba(75, 192, 192, 0.8)', 'rgba(75, 192, 192, 1)');
+        var humidity_outside_chart = newChart(ctx, "HUMIDITY_OUTSIDE", 'rgba(75, 192, 192, 0.8)', 'rgba(75, 192, 192, 1)');
 
         function processNewData(endpoint, chart) {
             fetch(endpoint)
@@ -91,8 +91,8 @@
             processNewData('/data/humidity_inside', humidity_inside_chart);
             processNewData('/data/temperature_repeater', temperature_repeater_chart);
             processNewData('/data/humidity_repeater', humidity_repeater_chart);
-            processNewData('/data/temperature_outside', temperature_repeater_chart);
-            processNewData('/data/humidity_outside', humidity_repeater_chart);
+            processNewData('/data/temperature_outside', temperature_outside_chart);
+            processNewData('/data/humidity_outside', humidity_outside_chart);
         };
 
         fetchData();
