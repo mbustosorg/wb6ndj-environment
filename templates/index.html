@@ -8,13 +8,17 @@
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation/dist/chartjs-plugin-annotation.min.js"></script>
 </head>
 <div style="margin: auto; width: 75%">
-    <div style="width: 50%; float: left">
+    <div style="width: 33%; float: left">
         <canvas id="chart"></canvas>
         <canvas id="chart2"></canvas>
     </div>
-    <div style="width: 50%; float: left">
+    <div style="width: 33%; float: left">
         <canvas id="chart3"></canvas>
         <canvas id="chart4"></canvas>
+    </div>
+    <div style="width: 33%; float: left">
+        <canvas id="chart5"></canvas>
+        <canvas id="chart6"></canvas>
     </div>
 </div>
 
@@ -64,6 +68,10 @@
         var temperature_repeater_chart = newChart(ctx, "TEMPERATURE_REPEATER", 'rgba(192,89,75,0.68)', 'rgb(234,19,19)');
         var ctx = document.getElementById('chart4').getContext('2d');
         var humidity_repeater_chart = newChart(ctx, "HUMIDITY_REPEATER", 'rgba(75, 192, 192, 0.8)', 'rgba(75, 192, 192, 1)');
+        var ctx = document.getElementById('chart5').getContext('2d');
+        var temperature_repeater_chart = newChart(ctx, "TEMPERATURE_OUTSIDE", 'rgba(192,89,75,0.68)', 'rgb(234,19,19)');
+        var ctx = document.getElementById('chart6').getContext('2d');
+        var humidity_repeater_chart = newChart(ctx, "HUMIDITY_OUTSIDE", 'rgba(75, 192, 192, 0.8)', 'rgba(75, 192, 192, 1)');
 
         function processNewData(endpoint, chart) {
             fetch(endpoint)
@@ -83,6 +91,8 @@
             processNewData('/data/humidity_inside', humidity_inside_chart);
             processNewData('/data/temperature_repeater', temperature_repeater_chart);
             processNewData('/data/humidity_repeater', humidity_repeater_chart);
+            processNewData('/data/temperature_outside', temperature_repeater_chart);
+            processNewData('/data/humidity_outside', humidity_repeater_chart);
         };
 
         fetchData();
