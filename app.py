@@ -1,11 +1,12 @@
 """Flask application to server website for environmental data"""
-import wb6ndjenvironment
+import dateutil.parser
 import os
-from dotenv import load_dotenv
+from zoneinfo import ZoneInfo
 
-from sqlalchemy import create_engine
 import pandas as pd
+from dotenv import load_dotenv
 from flask import Flask, render_template, jsonify
+from sqlalchemy import create_engine
 
 load_dotenv()
 
@@ -30,6 +31,7 @@ def data_for_sensor(sensor: str):
         db_connection = sql_engine.connect()
         data = pd.read_sql(f"select * from wb6ndjenv.{sensor}", db_connection)
         db_connection.close()
+        data["date"] = data["date"].apply(lambda x: dateutil.parser.isoparse(x + "Z").astimezone(ZoneInfo("America/Los_Angeles")))
         columns = [data["date"].tolist(), data[sensor].tolist()]
         return jsonify(data=columns)
     except:
