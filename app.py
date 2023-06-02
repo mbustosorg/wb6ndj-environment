@@ -48,8 +48,14 @@ def sensor_value(sensor_name: str):
 @app.route("/data/fan_state")
 def fan_state():
     """Endpoint for fan state"""
-    fan_state = data_for_sensor("FAN_STATE")
-    return fan_state["FAN_STATE"][-1]
+    try:
+        db_connection = sql_engine.connect()
+        data = pd.read_sql(f"select * from wb6ndjenv.FAN_STATE order by `date` desc", db_connection)
+        db_connection.close()
+        return data["FAN_STATE"][0]
+    except:
+        db_connection.rollback()
+        db_connection.close()
 
 
 if __name__ == "__main__":

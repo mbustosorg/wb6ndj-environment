@@ -96,9 +96,9 @@
                 .then(response => response.json())
                 .then(data => {
                     if (data == 1) {
-                        $("#fanState").textContent = "On";
+                        document.getElementById('fanState').textContent = "On";
                     } else {
-                        $("#fanState").textContent = "Off";
+                        document.getElementById('fanState').textContent = "Off";
                     }
                 });
         };
