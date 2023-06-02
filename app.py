@@ -29,7 +29,7 @@ def data_for_sensor(sensor: str):
     """Get data for 'sensor'"""
     try:
         db_connection = sql_engine.connect()
-        data = pd.read_sql(f"select * from wb6ndjenv.{sensor}", db_connection)
+        data = pd.read_sql(f"select * from wb6ndjenv.{sensor} order by \"date\"", db_connection)
         db_connection.close()
         data["date"] = data["date"].apply(lambda x: dateutil.parser.isoparse(x + "Z").astimezone(ZoneInfo("America/Los_Angeles")))
         columns = [data["date"].tolist(), data[sensor].tolist()]
@@ -43,6 +43,13 @@ def data_for_sensor(sensor: str):
 def sensor_value(sensor_name: str):
     """Endpoint for sensor data"""
     return data_for_sensor(sensor_name.upper())
+
+
+@app.route("/data/fan_state")
+def fan_state():
+    """Endpoint for fan state"""
+    fan_state = data_for_sensor("FAN_STATE")
+    return fan_state["FAN_STATE"][-1]
 
 
 if __name__ == "__main__":

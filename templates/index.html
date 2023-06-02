@@ -91,6 +91,18 @@
                 });
         };
 
+        function processFanState() {
+            fetch('/data/fan_state')
+                .then(response => response.json())
+                .then(data => {
+                    if (data == 1) {
+                        $("#fanState").textContent = "On";
+                    } else {
+                        $("#fanState").textContent = "Off";
+                    }
+                });
+        };
+
         function fetchData() {
             processNewData('/data/temperature_inside', temperature_inside_chart);
             processNewData('/data/humidity_inside', humidity_inside_chart);
@@ -98,6 +110,7 @@
             processNewData('/data/humidity_repeater', humidity_repeater_chart);
             processNewData('/data/temperature_outside', temperature_outside_chart);
             processNewData('/data/humidity_outside', humidity_outside_chart);
+            processFanState();
         };
 
         fetchData();
