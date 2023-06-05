@@ -8,8 +8,12 @@
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation/dist/chartjs-plugin-annotation.min.js"></script>
 </head>
 <body style="height: 100%">
-<div>
-    <label id="fanState">Off</label>
+<div style="margin: auto; width: 75%">
+    <label style="font-family:'Montserrat', sans-serif;font-size: 4rem;">WB6NDJ Repeater Environment</label>
+</div>
+<div style="margin: auto; width: 75%">
+    <label style="font-family:'Montserrat', sans-serif;font-size: 2rem;">Fan state: </label>
+    <label style="font-family:'Montserrat', sans-serif;font-size: 2rem;" id="fanState">Off</label>
 </div>
 <div style="margin: auto; width: 75%; height: 100%">
     <div style="width: 33%; float: left; height: 40%">
@@ -48,7 +52,7 @@
                         type: 'time',
                     },
                     y: {
-                        suggestedMin: 20
+                        suggestedMin: 30
                     }
                 },
                 //plugins: {
