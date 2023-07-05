@@ -59,10 +59,17 @@ def sensor_values(sensor_type: str):
     repeater = data_for_sensor(f"{sensor_type}_REPEATER")
     first = pd.merge_asof(inside, outside, on="date", tolerance=pd.Timedelta("2h"))
     second = pd.merge_asof(first, repeater, on="date", tolerance=pd.Timedelta("2h"))
+
+    fan_state = data_for_sensor("FAN_STATE")
+    fan_state["tempXS"] = fan_state["tempXS"].apply(lambda x: float(x)* 100.0)
     second = second.rename(columns={"tempXS_x": f"{sensor_type}_INSIDE", "tempXS_y": f"{sensor_type}_OUTSIDE", "tempXS": f"{sensor_type}_REPEATER"})
     second = second.drop(["name_x", "name_y", "name"], axis=1)
+    second = pd.merge_asof(second, fan_state, on="date", tolerance=pd.Timedelta("2d"))
+    second = second.rename(columns={"tempXS": "FAN_STATE"})
+    second = second.drop(["name"], axis=1)
+
     second = second.replace(float("nan"), "nan")
-    columns = [second["date"].tolist(), second[f"{sensor_type}_INSIDE"].tolist(), second[f"{sensor_type}_OUTSIDE"].tolist(), second[f"{sensor_type}_REPEATER"].tolist()]
+    columns = [second["date"].tolist(), second[f"{sensor_type}_INSIDE"].tolist(), second[f"{sensor_type}_OUTSIDE"].tolist(), second[f"{sensor_type}_REPEATER"].tolist(), second["FAN_STATE"].tolist()]
     return jsonify(data=columns)
 
 
@@ -81,10 +88,14 @@ def humidity_values():
 def fan_state():
     """Endpoint for fan state"""
     try:
+        start_date = pd.Timestamp.now(tz="UTC") + datetime.timedelta(days=-3)
         db_connection = sql_engine.connect()
         data = pd.read_sql(f"select * from wb6ndjenv.FAN_STATE order by `date` desc", db_connection)
         db_connection.close()
-        return data["FAN_STATE"][0]
+        data["date"] = data["date"].apply(lambda x: pd.Timestamp(dateutil.parser.isoparse(x + "Z")))
+        data = data[data["date"] >= start_date]
+        data["date"] = data["date"].apply(lambda x: x.astimezone(ZoneInfo("America/Los_Angeles")))
+        return jsonify(data=[data["date"].tolist(), data["FAN_STATE"].tolist()])
     except:
         db_connection.rollback()
         db_connection.close()

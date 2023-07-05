@@ -16,9 +16,10 @@
     <label style="font-family:'Montserrat', sans-serif;font-size: 2rem;" id="fanState">Off</label>
 </div>
 <div style="margin: auto; width: 75%; height: 100%">
-    <div style="width: 90%; float: left; height: 80%">
+    <div style="width: 90%; float: left; height: 100%">
         <canvas id="chart"></canvas>
         <canvas id="chart2"></canvas>
+        <canvas id="chart3"></canvas>
     </div>
 </div>
 
@@ -49,6 +50,13 @@
                     borderColor: bc[2],
                     borderWidth: 1,
                     pointRadius: 1,
+                },{
+                    label: names[3],
+                    data: [],
+                    backgroundColor: bg[3],
+                    borderColor: bc[3],
+                    borderWidth: 1,
+                    pointRadius: 1,
                 }]
             },
             options: {
@@ -73,13 +81,41 @@
                 //            }
                 //        }
                 //    }
+                //
                 //}
             }
         })};
+        function newSmallChart(ctx, names, bg, bc) {
+            return new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: names[0],
+                    data: [],
+                    backgroundColor: bg[0],
+                    borderColor: bc[0],
+                    borderWidth: 1,
+                    pointRadius: 1,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        type: 'time',
+                    },
+                    y: {
+                        suggestedMin: 30
+                    }
+                },
+            }
+        })};
         var ctx = document.getElementById('chart').getContext('2d');
-        var temperature_chart = newChart(ctx, ["INSIDE", "REPEATER", "OUTSIDE"], ['rgba(89, 192,75,0.68)','rgba(75,89,192,0.68)','rgba(192,89,75,0.68)'], ['rgb(89, 192,75)','rgb(75,89,192)','rgb(192,89,75)']);
+        var temperature_chart = newChart(ctx, ["INSIDE", "REPEATER", "OUTSIDE", "FAN_STATE"], ['rgba(89, 192,75,0.68)','rgba(75,89,192,0.68)','rgba(192,89,75,0.68)', 'rgb(0, 0, 0)'], ['rgb(89, 192,75)','rgb(75,89,192)','rgb(192,89,75)', 'rgb(0, 0, 0)']);
         var ctx = document.getElementById('chart2').getContext('2d');
-        var humidity_chart = newChart(ctx, ["INSIDE", "REPEATER", "OUTSIDE"],  ['rgba(89, 192,75,0.68)','rgba(75,89,192,0.68)','rgba(192,89,75,0.68)'], ['rgb(89, 192,75)','rgb(75,89,192)','rgb(192,89,75)']);
+        var humidity_chart = newChart(ctx, ["INSIDE", "REPEATER", "OUTSIDE", "FAN_STATE"],  ['rgba(89, 192,75,0.68)','rgba(75,89,192,0.68)','rgba(192,89,75,0.68)', 'rgb(0, 0, 0)'], ['rgb(89, 192,75)','rgb(75,89,192)','rgb(192,89,75)', 'rgb(0, 0, 0)']);
 
         function processNewData(endpoint, chart) {
             fetch(endpoint)
@@ -92,6 +128,8 @@
                     chart.data.datasets[0].data = Array.from(data.data[1]);
                     chart.data.datasets[1].data = Array.from(data.data[2]);
                     chart.data.datasets[2].data = Array.from(data.data[3]);
+                    chart.data.datasets[3].data = Array.from(data.data[4]);
+                    chart.update()
                 });
         };
 
@@ -99,20 +137,24 @@
             fetch('/data/fan_state')
                 .then(response => response.json())
                 .then(data => {
-                    if (data == 1) {
+                    if (data.data[0][0] == 1) {
                         document.getElementById('fanState').textContent = "On";
                     } else {
                         document.getElementById('fanState').textContent = "Off";
                     }
+                    var dates = data.data[0].map(function(e) {
+                        return new Date(e);
+                    });
+                    fan_chart.data.labels = Array.from(dates);
+                    fan_chart.data.datasets[0].data = Array.from(data.data[1]);
+                    fan_chart.update()
                 });
         };
 
         function fetchData() {
             processNewData('/data/temperature', temperature_chart);
             processNewData('/data/humidity', humidity_chart);
-            processFanState();
-            temperature_chart.update();
-            humidity_chart.update();
+            //processFanState();
         };
 
         fetchData();
