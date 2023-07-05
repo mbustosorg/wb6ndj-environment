@@ -37,8 +37,10 @@ def data_for_sensor(sensor: str):
         data["date"] = data["date"].apply(lambda x: pd.Timestamp(dateutil.parser.isoparse(x + "Z")))
         data = data[data["date"] >= start_date]
         data["date"] = data["date"].apply(lambda x: x.astimezone(ZoneInfo("America/Los_Angeles")))
-        columns = [data["date"].tolist(), data[sensor].tolist()]
-        return jsonify(data=columns)
+        data["name"] = sensor
+        data = data.rename(columns={sensor: "tempXS"})
+        #columns = [data["date"].tolist(), data[sensor].tolist()]
+        return data#jsonify(data=columns)
     except:
         db_connection.rollback()
         db_connection.close()
@@ -49,6 +51,31 @@ def sensor_value(sensor_name: str):
     """Endpoint for sensor data"""
     return data_for_sensor(sensor_name.upper())
 
+
+def sensor_values(sensor_type: str):
+    """Endpoint for sensor data"""
+    inside = data_for_sensor(f"{sensor_type}_INSIDE")
+    outside = data_for_sensor(f"{sensor_type}_OUTSIDE")
+    repeater = data_for_sensor(f"{sensor_type}_REPEATER")
+    first = pd.merge_asof(inside, outside, on="date", tolerance=pd.Timedelta("2h"))
+    second = pd.merge_asof(first, repeater, on="date", tolerance=pd.Timedelta("2h"))
+    second = second.rename(columns={"tempXS_x": f"{sensor_type}_INSIDE", "tempXS_y": f"{sensor_type}_OUTSIDE", "tempXS": f"{sensor_type}_REPEATER"})
+    second = second.drop(["name_x", "name_y", "name"], axis=1)
+    second = second.replace(float("nan"), "nan")
+    columns = [second["date"].tolist(), second[f"{sensor_type}_INSIDE"].tolist(), second[f"{sensor_type}_OUTSIDE"].tolist(), second[f"{sensor_type}_REPEATER"].tolist()]
+    return jsonify(data=columns)
+
+
+@app.route("/data/temperature")
+def temperature_values():
+    """Endpoint for temperature sensor data"""
+    return sensor_values("TEMPERATURE")
+
+
+@app.route("/data/humidity")
+def humidity_values():
+    """Endpoint for humidity sensor data"""
+    return sensor_values("HUMIDITY")
 
 @app.route("/data/fan_state")
 def fan_state():

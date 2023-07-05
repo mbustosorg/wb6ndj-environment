@@ -16,32 +16,39 @@
     <label style="font-family:'Montserrat', sans-serif;font-size: 2rem;" id="fanState">Off</label>
 </div>
 <div style="margin: auto; width: 75%; height: 100%">
-    <div style="width: 33%; float: left; height: 40%">
+    <div style="width: 90%; float: left; height: 80%">
         <canvas id="chart"></canvas>
         <canvas id="chart2"></canvas>
-    </div>
-    <div style="width: 33%; float: left; height: 40%">
-        <canvas id="chart3"></canvas>
-        <canvas id="chart4"></canvas>
-    </div>
-    <div style="width: 33%; float: left; height: 40%">
-        <canvas id="chart5"></canvas>
-        <canvas id="chart6"></canvas>
     </div>
 </div>
 
     <script>
-        function newChart(ctx, name, bg, bc) {
+        function newChart(ctx, names, bg, bc) {
             return new Chart(ctx, {
             type: 'line',
             data: {
                 labels: [],
                 datasets: [{
-                    label: name,
+                    label: names[0],
                     data: [],
-                    backgroundColor: bg,
-                    borderColor: bc,
-                    borderWidth: 1
+                    backgroundColor: bg[0],
+                    borderColor: bc[0],
+                    borderWidth: 1,
+                    pointRadius: 1,
+                },{
+                    label: names[1],
+                    data: [],
+                    backgroundColor: bg[1],
+                    borderColor: bc[1],
+                    borderWidth: 1,
+                    pointRadius: 1,
+                },{
+                    label: names[2],
+                    data: [],
+                    backgroundColor: bg[2],
+                    borderColor: bc[2],
+                    borderWidth: 1,
+                    pointRadius: 1,
                 }]
             },
             options: {
@@ -70,17 +77,9 @@
             }
         })};
         var ctx = document.getElementById('chart').getContext('2d');
-        var temperature_inside_chart = newChart(ctx, "TEMPERATURE_INSIDE", 'rgba(192,89,75,0.68)', 'rgb(234,19,19)');
+        var temperature_chart = newChart(ctx, ["INSIDE", "REPEATER", "OUTSIDE"], ['rgba(89, 192,75,0.68)','rgba(75,89,192,0.68)','rgba(192,89,75,0.68)'], ['rgb(89, 192,75)','rgb(75,89,192)','rgb(192,89,75)']);
         var ctx = document.getElementById('chart2').getContext('2d');
-        var humidity_inside_chart = newChart(ctx, "HUMIDITY_INSIDE", 'rgba(75, 192, 192, 0.8)', 'rgba(75, 192, 192, 1)');
-        var ctx = document.getElementById('chart3').getContext('2d');
-        var temperature_repeater_chart = newChart(ctx, "TEMPERATURE_REPEATER", 'rgba(192,89,75,0.68)', 'rgb(234,19,19)');
-        var ctx = document.getElementById('chart4').getContext('2d');
-        var humidity_repeater_chart = newChart(ctx, "HUMIDITY_REPEATER", 'rgba(75, 192, 192, 0.8)', 'rgba(75, 192, 192, 1)');
-        var ctx = document.getElementById('chart5').getContext('2d');
-        var temperature_outside_chart = newChart(ctx, "TEMPERATURE_OUTSIDE", 'rgba(192,89,75,0.68)', 'rgb(234,19,19)');
-        var ctx = document.getElementById('chart6').getContext('2d');
-        var humidity_outside_chart = newChart(ctx, "HUMIDITY_OUTSIDE", 'rgba(75, 192, 192, 0.8)', 'rgba(75, 192, 192, 1)');
+        var humidity_chart = newChart(ctx, ["INSIDE", "REPEATER", "OUTSIDE"],  ['rgba(89, 192,75,0.68)','rgba(75,89,192,0.68)','rgba(192,89,75,0.68)'], ['rgb(89, 192,75)','rgb(75,89,192)','rgb(192,89,75)']);
 
         function processNewData(endpoint, chart) {
             fetch(endpoint)
@@ -91,7 +90,8 @@
                     });
                     chart.data.labels = Array.from(dates);
                     chart.data.datasets[0].data = Array.from(data.data[1]);
-                    chart.update();
+                    chart.data.datasets[1].data = Array.from(data.data[2]);
+                    chart.data.datasets[2].data = Array.from(data.data[3]);
                 });
         };
 
@@ -108,13 +108,11 @@
         };
 
         function fetchData() {
-            processNewData('/data/temperature_inside', temperature_inside_chart);
-            processNewData('/data/humidity_inside', humidity_inside_chart);
-            processNewData('/data/temperature_repeater', temperature_repeater_chart);
-            processNewData('/data/humidity_repeater', humidity_repeater_chart);
-            processNewData('/data/temperature_outside', temperature_outside_chart);
-            processNewData('/data/humidity_outside', humidity_outside_chart);
+            processNewData('/data/temperature', temperature_chart);
+            processNewData('/data/humidity', humidity_chart);
             processFanState();
+            temperature_chart.update();
+            humidity_chart.update();
         };
 
         fetchData();
