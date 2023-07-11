@@ -57,19 +57,30 @@ def sensor_values(sensor_type: str):
     inside = data_for_sensor(f"{sensor_type}_INSIDE")
     outside = data_for_sensor(f"{sensor_type}_OUTSIDE")
     repeater = data_for_sensor(f"{sensor_type}_REPEATER")
-    first = pd.merge_asof(inside, outside, on="date", tolerance=pd.Timedelta("1d"))
-    second = pd.merge_asof(first, repeater, on="date", tolerance=pd.Timedelta("1d"))
+    if inside["date"].iloc[-1] > outside["date"].iloc[-1]:
+        first = pd.merge_asof(inside, outside, on="date", tolerance=pd.Timedelta("1d"))
+        first = first.rename(columns={"tempXS_x": f"{sensor_type}_INSIDE", "tempXS_y": f"{sensor_type}_OUTSIDE"})
+    else:
+        first = pd.merge_asof(outside, inside, on="date", tolerance=pd.Timedelta("1d"))
+        first = first.rename(columns={"tempXS_x": f"{sensor_type}_OUTSIDE", "tempXS_y": f"{sensor_type}_INSIDE"})
+    if first["date"].iloc[-1] > repeater["date"].iloc[-1]:
+        second = pd.merge_asof(first, repeater, on="date", tolerance=pd.Timedelta("1d"))
+        second = second.rename(columns={"tempXS": f"{sensor_type}_REPEATER"})
+    else:
+        second = pd.merge_asof(repeater, first, on="date", tolerance=pd.Timedelta("1d"))
+        second = second.rename(columns={"tempXS": f"{sensor_type}_REPEATER"})
+
+    second = second.drop(["name_x", "name_y", "name"], axis=1)
 
     fan_state = data_for_sensor("FAN_STATE")
     fan_state["tempXS"] = fan_state["tempXS"].apply(lambda x: float(x) * 10.0 + 30.0)
-    second = second.rename(columns={"tempXS_x": f"{sensor_type}_INSIDE", "tempXS_y": f"{sensor_type}_OUTSIDE", "tempXS": f"{sensor_type}_REPEATER"})
-    second = second.drop(["name_x", "name_y", "name"], axis=1)
+
     second = pd.merge_asof(second, fan_state, on="date", tolerance=pd.Timedelta("2d"))
     second = second.rename(columns={"tempXS": "FAN_STATE"})
     second = second.drop(["name"], axis=1)
-
     second = second.replace(float("nan"), "nan")
-    columns = [second["date"].tolist(), second[f"{sensor_type}_INSIDE"].tolist(), second[f"{sensor_type}_OUTSIDE"].tolist(), second[f"{sensor_type}_REPEATER"].tolist(), second["FAN_STATE"].tolist()]
+
+    columns = [second["date"].tolist(), second[f"{sensor_type}_INSIDE"].tolist(), second[f"{sensor_type}_REPEATER"].tolist(), second[f"{sensor_type}_OUTSIDE"].tolist(), second["FAN_STATE"].tolist()]
     return jsonify(data=columns)
 
 
