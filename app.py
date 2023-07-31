@@ -55,19 +55,22 @@ def sensor_value(sensor_name: str):
 def sensor_values(sensor_type: str):
     """Endpoint for sensor data"""
     inside = data_for_sensor(f"{sensor_type}_INSIDE")
+    inside["tempXS"] = inside["tempXS"].astype(float)
     outside = data_for_sensor(f"{sensor_type}_OUTSIDE")
+    outside["tempXS"] = outside["tempXS"].astype(float)
     repeater = data_for_sensor(f"{sensor_type}_REPEATER")
+    repeater["tempXS"] = repeater["tempXS"].astype(float)
     if inside["date"].iloc[-1] > outside["date"].iloc[-1]:
-        first = pd.merge_asof(inside, outside, on="date", tolerance=pd.Timedelta("1d"))
+        first = pd.merge_ordered(inside, outside, on="date") #, tolerance=pd.Timedelta("1d"))
         first = first.rename(columns={"tempXS_x": f"{sensor_type}_INSIDE", "tempXS_y": f"{sensor_type}_OUTSIDE"})
     else:
-        first = pd.merge_asof(outside, inside, on="date", tolerance=pd.Timedelta("1d"))
+        first = pd.merge_ordered(outside, inside, on="date") #, tolerance=pd.Timedelta("1d"))
         first = first.rename(columns={"tempXS_x": f"{sensor_type}_OUTSIDE", "tempXS_y": f"{sensor_type}_INSIDE"})
     if first["date"].iloc[-1] > repeater["date"].iloc[-1]:
-        second = pd.merge_asof(first, repeater, on="date", tolerance=pd.Timedelta("1d"))
+        second = pd.merge_ordered(first, repeater, on="date") #, tolerance=pd.Timedelta("1d"))
         second = second.rename(columns={"tempXS": f"{sensor_type}_REPEATER"})
     else:
-        second = pd.merge_asof(repeater, first, on="date", tolerance=pd.Timedelta("1d"))
+        second = pd.merge_ordered(repeater, first, on="date") #, tolerance=pd.Timedelta("1d"))
         second = second.rename(columns={"tempXS": f"{sensor_type}_REPEATER"})
 
     second = second.drop(["name_x", "name_y", "name"], axis=1)
@@ -78,6 +81,10 @@ def sensor_values(sensor_type: str):
     second = pd.merge_asof(second, fan_state, on="date", tolerance=pd.Timedelta("2d"))
     second = second.rename(columns={"tempXS": "FAN_STATE"})
     second = second.drop(["name"], axis=1)
+    second = second.set_index(["date"], drop=False)
+    second[f"{sensor_type}_INSIDE"] = second[[f"{sensor_type}_INSIDE"]].interpolate(method="time")
+    second[f"{sensor_type}_OUTSIDE"] = second[[f"{sensor_type}_OUTSIDE"]].interpolate(method="time")
+    second[f"{sensor_type}_REPEATER"] = second[[f"{sensor_type}_REPEATER"]].interpolate(method="time")
     second = second.replace(float("nan"), "nan")
 
     columns = [second["date"].tolist(), second[f"{sensor_type}_INSIDE"].tolist(), second[f"{sensor_type}_REPEATER"].tolist(), second[f"{sensor_type}_OUTSIDE"].tolist(), second["FAN_STATE"].tolist()]
