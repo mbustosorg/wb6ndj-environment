@@ -19,7 +19,7 @@
 </div>
 
     <script>
-        function newChart(ctx, names, bg, bc) {
+        function newChart(ctx, name, names, bg, bc) {
             return new Chart(ctx, {
             type: 'line',
             data: {
@@ -60,8 +60,16 @@
                 scales: {
                     x: {
                         type: 'time',
+                        title: {
+                          display: true,
+                          text: 'Time'
+                        },
                     },
                     y: {
+                        title: {
+                          display: true,
+                          text: name
+                        },
                         suggestedMin: 30
                     }
                 },
@@ -108,9 +116,9 @@
             }
         })};
         var ctx = document.getElementById('chart').getContext('2d');
-        var temperature_chart = newChart(ctx, ["INSIDE", "REPEATER", "OUTSIDE", "FAN_STATE"], ['rgba(89, 192,75,0.68)','rgba(75,89,192,0.68)','rgba(192,89,75,0.68)', 'rgb(0, 0, 0)'], ['rgb(89, 192,75)','rgb(75,89,192)','rgb(192,89,75)', 'rgb(0, 0, 0)']);
+        var temperature_chart = newChart(ctx, 'Temperature (F)', ["INSIDE", "REPEATER", "OUTSIDE", "FAN_STATE"], ['rgba(89, 192,75,0.68)','rgba(75,89,192,0.68)','rgba(192,89,75,0.68)', 'rgb(0, 0, 0)'], ['rgb(89, 192,75)','rgb(75,89,192)','rgb(192,89,75)', 'rgb(0, 0, 0)']);
         var ctx = document.getElementById('chart2').getContext('2d');
-        var humidity_chart = newChart(ctx, ["INSIDE", "REPEATER", "OUTSIDE", "FAN_STATE"],  ['rgba(89, 192,75,0.68)','rgba(75,89,192,0.68)','rgba(192,89,75,0.68)', 'rgb(0, 0, 0)'], ['rgb(89, 192,75)','rgb(75,89,192)','rgb(192,89,75)', 'rgb(0, 0, 0)']);
+        var humidity_chart = newChart(ctx, 'Relative Humidity (%)', ["INSIDE", "REPEATER", "OUTSIDE", "FAN_STATE"],  ['rgba(89, 192,75,0.68)','rgba(75,89,192,0.68)','rgba(192,89,75,0.68)', 'rgb(0, 0, 0)'], ['rgb(89, 192,75)','rgb(75,89,192)','rgb(192,89,75)', 'rgb(0, 0, 0)']);
 
         function processNewData(endpoint, chart) {
             fetch(endpoint)
