@@ -60,20 +60,33 @@ def sensor_values(sensor_type: str):
     outside["tempXS"] = outside["tempXS"].astype(float)
     repeater = data_for_sensor(f"{sensor_type}_REPEATER")
     repeater["tempXS"] = repeater["tempXS"].astype(float)
-    if inside["date"].iloc[-1] > outside["date"].iloc[-1]:
+    if not inside.shape[0]:
+        first = outside
+        first = first.rename(columns={"tempXS": f"{sensor_type}_OUTSIDE"})
+        first = first.drop(["name"], axis=1)
+        first[f"{sensor_type}_INSIDE"] = np.nan
+    elif not outside.shape[0]:
+        first = inside
+        first = first.rename(columns={"tempXS": f"{sensor_type}_INSIDE"})
+        first = first.drop(["name"], axis=1)
+        first[f"{sensor_type}_OUTSIDE"] = np.nan
+    elif inside["date"].iloc[-1] > outside["date"].iloc[-1]:
         first = pd.merge_ordered(inside, outside, on="date") #, tolerance=pd.Timedelta("1d"))
         first = first.rename(columns={"tempXS_x": f"{sensor_type}_INSIDE", "tempXS_y": f"{sensor_type}_OUTSIDE"})
     else:
         first = pd.merge_ordered(outside, inside, on="date") #, tolerance=pd.Timedelta("1d"))
         first = first.rename(columns={"tempXS_x": f"{sensor_type}_OUTSIDE", "tempXS_y": f"{sensor_type}_INSIDE"})
-    if first["date"].iloc[-1] > repeater["date"].iloc[-1]:
+    if not repeater.shape[0]:
+        second = first
+        second[f"{sensor_type}_REPEATER"] = np.nan
+    elif first["date"].iloc[-1] > repeater["date"].iloc[-1]:
         second = pd.merge_ordered(first, repeater, on="date") #, tolerance=pd.Timedelta("1d"))
         second = second.rename(columns={"tempXS": f"{sensor_type}_REPEATER"})
+        second = second.drop(["name_x", "name_y", "name"], axis=1)
     else:
         second = pd.merge_ordered(repeater, first, on="date") #, tolerance=pd.Timedelta("1d"))
         second = second.rename(columns={"tempXS": f"{sensor_type}_REPEATER"})
-
-    second = second.drop(["name_x", "name_y", "name"], axis=1)
+        second = second.drop(["name_x", "name_y", "name"], axis=1)
 
     fan_state = data_for_sensor("FAN_STATE")
     fan_state["tempXS"] = fan_state["tempXS"].apply(lambda x: float(x) * 10.0 + 30.0)
